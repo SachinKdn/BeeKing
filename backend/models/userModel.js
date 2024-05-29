@@ -1,6 +1,10 @@
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs")
+
+const crypto = require('crypto')//ye built in h install nhi krna pdta
+
+
 const userSchema = new mongoose.Schema({
     name:{
         type:String,
@@ -61,6 +65,19 @@ userSchema.methods.getToken = function(){
 userSchema.methods.comparePassword = async function(enteredPassword){
     return await bcrypt.compare(enteredPassword,this.password)
 }
+
+userSchema.methods.getResetPasswordToken = function(){
+    const resetToken = crypto.randomBytes(20).toString("hex");
+
+    //Hashing and adding resetPasswordToken to userSchema
+    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    console.log("Your Saved token is : " + this.resetPasswordToken)
+    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+    console.log("Your final token is : " + resetToken)
+    return resetToken;//ab nodemailer ka use krke mail bhjne ki tyari krenge 
+}
+
 
 
 module.exports = mongoose.model("User",userSchema)
